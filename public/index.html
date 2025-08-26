@@ -324,8 +324,12 @@ function showFacultySelection(){
             (completedFaculties.includes(f) ? 'bg-green-200 cursor-not-allowed' : 'bg-gray-50 cursor-pointer');
         card.innerHTML = `<h3 class="font-semibold">${f}</h3>`;
         if(!completedFaculties.includes(f)){
-            card.onclick = () => { selectedFacultyIndex = idx; startFeedback(); };
-        }
+            card.onclick = () => {
+    if (!completedFaculties.includes(f)) { // only if not completed
+        selectedFacultyIndex = idx;       // set the current faculty index
+        startFeedback();                  // show feedback page
+    }
+};
         grid.appendChild(card);
     });
 }
@@ -448,3 +452,4 @@ async function submitFacultyFeedback() {
         alert("❌ Fetch Error: " + err.message);
     }
 }
+
