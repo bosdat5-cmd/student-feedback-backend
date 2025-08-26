@@ -1,24 +1,25 @@
+// server.js
+require('dotenv').config(); // Load environment variables
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const Feedback = require("./models/Feedback");  // import the schema
+const Feedback = require("./models/Feedback");  // Your Feedback schema
 
 const app = express();
 
 // ✅ Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors()); // Optional: only needed if your frontend is on a different origin
 
-// ✅ Serve static files (your HTML + JS)
+// ✅ Serve static files (HTML + JS)
 app.use(express.static(path.join(__dirname, "public")));
 
-// 🔹 Connect to MongoDB
-mongoose.connect(
-  "mongodb+srv://StudentUser:Student%401234@student.khydwyf.mongodb.net/studentFeedbackDB?retryWrites=true&w=majority&appName=Student"
-)
-.then(() => console.log("✅ MongoDB connected"))
-.catch(err => console.error("❌ MongoDB connection error:", err));
+// 🔹 Connect to MongoDB using environment variable
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
 // 🔹 Test route
 app.get("/", (req, res) => {
@@ -86,7 +87,7 @@ app.post("/feedback", async (req, res) => {
   }
 });
 
-// 🔹 Get All Feedback (for admin/testing)
+// 🔹 Get all feedback (for admin/testing)
 app.get("/feedback", async (req, res) => {
   try {
     const feedbacks = await Feedback.find().sort({ createdAt: -1 });
