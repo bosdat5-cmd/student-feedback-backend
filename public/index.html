@@ -71,13 +71,26 @@
 
     <!-- Page 3: Faculty Feedback -->
     <div id="page3" class="form-page bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-2">Feedback for <span id="currentFaculty" class="text-blue-600"></span></h2>
-        <p class="text-gray-600 mb-6">Please answer all questions:</p>
-        <div class="space-y-6" id="questionsContainer">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Batch ID *</label>
-                <input type="text" id="batchId" class="w-full px-4 py-2 border border-gray-300 rounded-md">
-            </div>
+    <h2 class="text-2xl font-semibold text-gray-800 mb-2">
+        Feedback for <span id="currentFaculty" class="text-blue-600"></span>
+    </h2>
+    <p class="text-gray-600 mb-6">Please answer all questions:</p>
+
+    <div class="space-y-6" id="questionsContainer">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Batch ID *</label>
+            <input type="text" id="batchId" class="w-full px-4 py-2 border border-gray-300 rounded-md">
+        </div>
+
+        <!-- Your other questions here... -->
+
+    </div>
+
+    <!-- ✅ Next button at the bottom -->
+    <button type="button" id="nextBtn" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+        Next
+    </button>
+</div>
             <!-- Ratings 1-5 -->
             <div>
                 <label>Attendance & Punctuality *</label>
@@ -451,5 +464,6 @@ async function submitFacultyFeedback() {
         alert("❌ Fetch Error: " + err.message);
     }
 }
+
 
 
