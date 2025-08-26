@@ -1,10 +1,11 @@
+// server.js
 require('dotenv').config(); // Load environment variables
 
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const Feedback = require("./models/Feedback");
+const Feedback = require("./models/Feedback");  // Your Feedback schema
 
 const app = express();
 
@@ -16,7 +17,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type"]
 }));
 
-// ✅ Serve static files
+// ✅ Serve static files (HTML + JS + CSS)
 app.use(express.static(path.join(__dirname, "public")));
 
 // 🔹 Connect to MongoDB
@@ -24,7 +25,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
-// 🔹 Test route
+// 🔹 Serve index.html at root
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -66,7 +67,7 @@ app.post("/feedback", async (req, res) => {
   }
 });
 
-// 🔹 Get all feedback
+// 🔹 Get all feedback (for admin/testing)
 app.get("/feedback", async (req, res) => {
   try {
     const feedbacks = await Feedback.find().sort({ createdAt: -1 });
@@ -75,11 +76,6 @@ app.get("/feedback", async (req, res) => {
     console.error("❌ Error fetching feedback:", error);
     res.status(500).json({ message: "❌ Error fetching feedback", error });
   }
-});
-
-// 🔹 Catch-all route for SPA support
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // 🔹 Start server
