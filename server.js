@@ -11,7 +11,11 @@ const app = express();
 
 // ✅ Middleware
 app.use(express.json());
-app.use(cors()); // Optional: only needed if your frontend is on a different origin
+app.use(cors({
+  origin: "*", // or your frontend domain
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"]
+}));
 
 // ✅ Serve static files (HTML + JS)
 app.use(express.static(path.join(__dirname, "public")));
@@ -100,3 +104,4 @@ app.get("/feedback", async (req, res) => {
 // 🔹 Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
