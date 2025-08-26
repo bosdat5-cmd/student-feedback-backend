@@ -296,76 +296,71 @@ function showPage(pageId){
     document.getElementById(pageId).classList.add('active');
 }
 
-// Validate student info
-function validatePage1(){
+// Page 1 Next → Validate student info
+document.getElementById('page1NextBtn').addEventListener('click', () => {
     const name = document.getElementById('studentName').value.trim();
     const reg = document.getElementById('regNumber').value.trim();
     const email = document.getElementById('email').value.trim();
     const mobile = document.getElementById('mobile').value.trim();
 
     if(!name || !reg || !email || !mobile){
-        alert("Fill all student info.");
+        alert("Please fill all student info fields.");
         return;
     }
 
-    // ✅ Proper regex for registration number (3 letters + 7 digits)
     const regPattern = /^[A-Za-z]{3}[0-9]{7}$/;
-    if (!regPattern.test(reg)) {
+    if(!regPattern.test(reg)){
         alert("Registration Number must be 3 letters followed by 7 digits (e.g., ABC1234567).");
         return;
     }
 
-    // ✅ Proper regex for mobile (10 digits only)
     const mobilePattern = /^[0-9]{10}$/;
-    if (!mobilePattern.test(mobile)) {
+    if(!mobilePattern.test(mobile)){
         alert("Mobile number must be exactly 10 digits.");
         return;
     }
 
-    // ✅ If everything is okay, go to next page
     showFacultySelection();
-}
+});
 
 // Show faculty selection
 function showFacultySelection(){
     showPage('page2');
     const grid = document.getElementById('facultyGrid');
     grid.innerHTML = '';
-faculties.forEach((f, idx) => {
-    const card = document.createElement('div');
-    card.className = 'faculty-card p-4 border rounded-md text-center ' +
-        (completedFaculties.includes(f) ? 'bg-green-200 cursor-not-allowed' : 'bg-gray-50 cursor-pointer');
-    card.innerHTML = `<h3 class="font-semibold">${f}</h3>`;
-    if (!completedFaculties.includes(f)) {
-        card.onclick = () => {
-            selectedFacultyIndex = idx;
-            startFeedback(); // make sure this resets fields
-        };
-    }
-    grid.appendChild(card);
-});
+    faculties.forEach((f, idx) => {
+        const card = document.createElement('div');
+        card.className = 'faculty-card p-4 border rounded-md text-center ' +
+            (completedFaculties.includes(f) ? 'bg-green-200 cursor-not-allowed' : 'bg-gray-50 cursor-pointer');
+        card.innerHTML = `<h3 class="font-semibold">${f}</h3>`;
+        if (!completedFaculties.includes(f)) {
+            card.onclick = () => {
+                selectedFacultyIndex = idx;
+                startFeedback();
+            };
+        }
+        grid.appendChild(card);
+    });
 }
 
-// Start feedback
+// Start faculty feedback
 function startFeedback(){
     showPage('page3');
     document.getElementById('currentFaculty').innerText = faculties[selectedFacultyIndex];
 
-    // Reset all fields
+    // Reset fields
     document.querySelectorAll('#questionsContainer select').forEach(el => el.selectedIndex = 0);
     document.getElementById('quizMarks').value = '';
 
-    // Add event listeners for live calculation
-    const allSelects = document.querySelectorAll('#questionsContainer select');
-    allSelects.forEach(el => el.addEventListener('change', calculateWeighted));
+    // Live calculate weighted score
+    document.querySelectorAll('#questionsContainer select').forEach(el => el.addEventListener('change', calculateWeighted));
     document.getElementById('quizMarks').addEventListener('input', calculateWeighted);
 }
 
-// Live calculate weighted score and grade
+// Calculate weighted score & grade
 function calculateWeighted() {
     const allSelects = document.querySelectorAll('#questionsContainer select');
-    let total = 0;
-    let count = 0;
+    let total = 0, count = 0;
 
     allSelects.forEach(el => {
         if (el.selectedIndex > 0) {
@@ -390,22 +385,20 @@ function calculateWeighted() {
     document.getElementById('gradeDisplay').innerText = grade;
 }
 
-// Submit feedback
-async function submitFacultyFeedback() {
+// Page 3 Next → Submit feedback
+document.querySelector('#page3 button').addEventListener('click', async () => {
     const selects = document.querySelectorAll('#questionsContainer select');
     const quizInput = document.getElementById('quizMarks').value.trim();
 
-    // Validate all dropdowns
-    for (let el of selects) {
-        if (el.selectedIndex === 0) {
-            alert("Fill all fields.");
+    for(let el of selects){
+        if(el.selectedIndex === 0){
+            alert("Please fill all rating fields.");
             return;
         }
     }
 
-    // Validate quiz marks
     const quizMarks = parseFloat(quizInput);
-    if (isNaN(quizMarks) || quizMarks < 1) {
+    if(isNaN(quizMarks) || quizMarks < 1){
         alert("Quiz marks must be at least 1.");
         return;
     }
@@ -443,25 +436,24 @@ async function submitFacultyFeedback() {
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) {
+        if(!response.ok){
             alert("❌ Error submitting feedback.");
             return;
         }
 
-        // ✅ Update progress and move to next
         completedFaculties.push(faculties[selectedFacultyIndex]);
         const percent = Math.round((completedFaculties.length / totalFaculties) * 100);
-        document.querySelector('.progress-bar').style.width = percent + '%';
-        document.getElementById('progress-text').innerText = percent + '%';
+        document.querySelector('.progress-bar').style.width = percent+'%';
+        document.getElementById('progress-text').innerText = percent+'%';
 
-        if (completedFaculties.length >= totalFaculties) {
-            showPage('page4'); // All feedback done
+        if(completedFaculties.length >= totalFaculties){
+            showPage('page4'); // Done
         } else {
-            showFacultySelection(); // Go to next faculty
+            showFacultySelection(); // Next faculty
         }
 
-    } catch (err) {
-        alert("❌ Fetch Error: " + err.message);
+    } catch(err){
+        alert("❌ Fetch Error: "+err.message);
     }
-}
-
+});
+</script>
