@@ -418,31 +418,27 @@ function submitFacultyFeedback() {
     };
 
     // 🔹 Send to Formspree instead of Google Apps Script
-fetch("https://student-feedback-backend-n8cd.onrender.com", {
+fetch("https://student-feedback-backend-n8cd.onrender.com/feedback", {
     method: "POST",
     headers: {
         "Content-Type": "application/json"
     },
     body: JSON.stringify(payload)
 })
+.then(res => {
+    if (res.ok) {
+        completedFaculties.push(faculties[selectedFacultyIndex]);
+        const percent = Math.round((completedFaculties.length / totalFaculties) * 100);
+        document.querySelector('.progress-bar').style.width = percent+'%';
+        document.getElementById('progress-text').innerText = percent+'%';
 
-    .then(res => {
-        if (res.ok) {
-            completedFaculties.push(faculties[selectedFacultyIndex]);
-            const percent = Math.round((completedFaculties.length / totalFaculties) * 100);
-            document.querySelector('.progress-bar').style.width = percent+'%';
-            document.getElementById('progress-text').innerText = percent+'%';
-
-            if (completedFaculties.length >= totalFaculties) {
-                showPage('page4');
-            } else {
-                showFacultySelection();
-            }
+        if (completedFaculties.length >= totalFaculties) {
+            showPage('page4');
         } else {
-            alert("Formspree Error: Could not submit data.");
+            showFacultySelection();
         }
-    })
-    .catch(err => alert("Fetch Error: " + err.message));
-}
-</script>
-
+    } else {
+        alert("❌ Error submitting feedback.");
+    }
+})
+.catch(err => alert("❌ Fetch Error: " + err.message));
