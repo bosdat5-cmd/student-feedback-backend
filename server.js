@@ -12,7 +12,7 @@ const app = express();
 // ✅ Middleware
 app.use(express.json());
 app.use(cors({
-  origin: "*", // or your frontend domain
+  origin: "*", // Render allows multiple students from anywhere
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"]
 }));
@@ -21,9 +21,12 @@ app.use(cors({
 app.use(express.static(path.join(__dirname, "public")));
 
 // 🔹 Connect to MongoDB using environment variable
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error("❌ MongoDB connection error:", err));
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log("✅ MongoDB connected"))
+.catch(err => console.error("❌ MongoDB connection error:", err));
 
 // 🔹 Test route
 app.get("/", (req, res) => {
@@ -33,60 +36,37 @@ app.get("/", (req, res) => {
 // 🔹 Submit Feedback
 app.post("/feedback", async (req, res) => {
   try {
-    const {
-      studentName,
-      regNumber,
-      email,
-      mobile,
-      faculty,
-      batchId,
-      attendance,
-      dressCode,
-      discipline,
-      participation,
-      teamwork,
-      presentationContent,
-      presentationDelivery,
-      communication,
-      analytical,
-      creativity,
-      ethics,
-      emotional,
-      overallEngagement,
-      quizMarks,
-      weightedScore,
-      grade
-    } = req.body;
+    const data = req.body;
 
     const newFeedback = new Feedback({
-      studentName,
-      regNumber,
-      email,
-      mobile,
-      facultyName: faculty,
-      batchId,
-      attendance,
-      dressCode,
-      discipline,
-      participation,
-      teamwork,
-      presentationContent,
-      presentationDelivery,
-      communication,
-      analytical,
-      creativity,
-      ethics,
-      emotional,
-      overallEngagement,
-      quizMarks,
-      weightedScore,
-      grade
+      studentName: data.studentName,
+      regNumber: data.regNumber,
+      email: data.email,
+      mobile: data.mobile,
+      facultyName: data.faculty,
+      batchId: data.batchId,
+      attendance: data.attendance,
+      dressCode: data.dressCode,
+      discipline: data.discipline,
+      participation: data.participation,
+      teamwork: data.teamwork,
+      presentationContent: data.presentationContent,
+      presentationDelivery: data.presentationDelivery,
+      communication: data.communication,
+      analytical: data.analytical,
+      creativity: data.creativity,
+      ethics: data.ethics,
+      emotional: data.emotional,
+      overallEngagement: data.overallEngagement,
+      quizMarks: data.quizMarks,
+      weightedScore: data.weightedScore,
+      grade: data.grade
     });
 
     await newFeedback.save();
     res.status(201).json({ message: "✅ Feedback saved successfully!" });
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error saving feedback:", error);
     res.status(500).json({ message: "❌ Error saving feedback", error });
   }
 });
@@ -97,6 +77,7 @@ app.get("/feedback", async (req, res) => {
     const feedbacks = await Feedback.find().sort({ createdAt: -1 });
     res.json(feedbacks);
   } catch (error) {
+    console.error("❌ Error fetching feedback:", error);
     res.status(500).json({ message: "❌ Error fetching feedback", error });
   }
 });
@@ -104,4 +85,3 @@ app.get("/feedback", async (req, res) => {
 // 🔹 Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
