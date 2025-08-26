@@ -1,32 +1,28 @@
-// server.js
 require('dotenv').config(); // Load environment variables
 
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const Feedback = require("./models/Feedback");  // Your Feedback schema
+const Feedback = require("./models/Feedback");
 
 const app = express();
 
 // ✅ Middleware
 app.use(express.json());
 app.use(cors({
-  origin: "*", // Render allows multiple students from anywhere
+  origin: "*",
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"]
 }));
 
-// ✅ Serve static files (HTML + JS)
+// ✅ Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// 🔹 Connect to MongoDB using environment variable
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log("✅ MongoDB connected"))
-.catch(err => console.error("❌ MongoDB connection error:", err));
+// 🔹 Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
 // 🔹 Test route
 app.get("/", (req, res) => {
@@ -37,7 +33,6 @@ app.get("/", (req, res) => {
 app.post("/feedback", async (req, res) => {
   try {
     const data = req.body;
-
     const newFeedback = new Feedback({
       studentName: data.studentName,
       regNumber: data.regNumber,
@@ -71,7 +66,7 @@ app.post("/feedback", async (req, res) => {
   }
 });
 
-// 🔹 Get all feedback (for admin/testing)
+// 🔹 Get all feedback
 app.get("/feedback", async (req, res) => {
   try {
     const feedbacks = await Feedback.find().sort({ createdAt: -1 });
@@ -80,6 +75,11 @@ app.get("/feedback", async (req, res) => {
     console.error("❌ Error fetching feedback:", error);
     res.status(500).json({ message: "❌ Error fetching feedback", error });
   }
+});
+
+// 🔹 Catch-all route for SPA support
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // 🔹 Start server
