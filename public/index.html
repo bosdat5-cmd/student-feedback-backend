@@ -375,10 +375,11 @@ function calculateWeighted() {
 }
 
 // Submit feedback
-function submitFacultyFeedback() {
+async function submitFacultyFeedback() {
     const selects = document.querySelectorAll('#questionsContainer select');
     const quizInput = document.getElementById('quizMarks').value.trim();
 
+    // Validate all dropdowns
     for (let el of selects) {
         if (el.selectedIndex === 0) {
             alert("Fill all fields.");
@@ -386,12 +387,14 @@ function submitFacultyFeedback() {
         }
     }
 
+    // Validate quiz marks
     const quizMarks = parseFloat(quizInput);
     if (isNaN(quizMarks) || quizMarks < 1) {
         alert("Quiz marks must be at least 1.");
         return;
     }
 
+    // Prepare payload
     const payload = {
         studentName: document.getElementById('studentName').value,
         regNumber: document.getElementById('regNumber').value,
@@ -417,28 +420,31 @@ function submitFacultyFeedback() {
         grade: document.getElementById('gradeDisplay').innerText
     };
 
-    // 🔹 Send to Formspree instead of Google Apps Script
-fetch("https://student-feedback-backend-n8cd.onrender.com/feedback", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-})
-.then(res => {
-    if (res.ok) {
+    try {
+        const response = await fetch("https://student-feedback-backend-n8cd.onrender.com/feedback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            alert("❌ Error submitting feedback.");
+            return;
+        }
+
+        // ✅ Update progress and move to next
         completedFaculties.push(faculties[selectedFacultyIndex]);
         const percent = Math.round((completedFaculties.length / totalFaculties) * 100);
-        document.querySelector('.progress-bar').style.width = percent+'%';
-        document.getElementById('progress-text').innerText = percent+'%';
+        document.querySelector('.progress-bar').style.width = percent + '%';
+        document.getElementById('progress-text').innerText = percent + '%';
 
         if (completedFaculties.length >= totalFaculties) {
-            showPage('page4');
+            showPage('page4'); // All feedback done
         } else {
-            showFacultySelection();
+            showFacultySelection(); // Go to next faculty
         }
-    } else {
-        alert("❌ Error submitting feedback.");
+
+    } catch (err) {
+        alert("❌ Fetch Error: " + err.message);
     }
-})
-.catch(err => alert("❌ Fetch Error: " + err.message));
+}
