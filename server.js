@@ -10,14 +10,9 @@ const app = express();
 
 // ✅ Middleware
 app.use(express.json());
-app.use(cors({
-  origin: "*", // allow all origins (you can restrict to your frontend later)
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"]
-}));
 
-// ✅ Serve static files if frontend is bundled inside `public`
-app.use(express.static(path.join(__dirname, "public")));
+// ✅ CORS setup (safe for Render + GitHub frontend)
+app.use(cors()); // allow all origins by default
 
 // ✅ Debug: check if env is loading
 console.log("MONGO_URI from .env:", process.env.MONGO_URI);
@@ -85,13 +80,6 @@ app.get("/feedback", async (req, res) => {
   }
 });
 
-// 🔹 Catch-all (for SPA if needed)
-app.get("/*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
