@@ -424,22 +424,29 @@ fetch("https://student-feedback-backend-n8cd.onrender.com/feedback", {
     },
     body: JSON.stringify(payload)
 })
-.then(res => {
+.then(async (res) => {
     if (res.ok) {
+        // ✅ Feedback saved successfully
         completedFaculties.push(faculties[selectedFacultyIndex]);
+
         const percent = Math.round((completedFaculties.length / totalFaculties) * 100);
         document.querySelector('.progress-bar').style.width = percent + '%';
         document.getElementById('progress-text').innerText = percent + '%';
 
         if (completedFaculties.length >= totalFaculties) {
-            showPage('page4');
+            showPage('page4'); // Final thank you page
         } else {
-            showFacultySelection();
+            showFacultySelection(); // Move to next faculty
         }
     } else {
-        res.json().then(err => {
-            alert("❌ Error: " + (err.message || "Could not submit data"));
-        });
+        // ❌ Get backend error details
+        const errorData = await res.json();
+        alert("❌ Server Error: " + (errorData.message || "Could not submit data."));
+        console.error("Backend Error:", errorData);
     }
 })
-.catch(err => alert("Fetch Error: " + err.message));
+.catch(err => {
+    // ❌ Network or CORS error
+    alert("❌ Fetch Error: " + err.message);
+    console.error("Fetch Exception:", err);
+});
