@@ -315,12 +315,14 @@ function showFacultySelection(){
                          (completedFaculties.includes(f)?'bg-green-200 cursor-not-allowed':'bg-gray-50 cursor-pointer');
         card.innerText = f;
         if(!completedFaculties.includes(f)){
-            card.onclick = () => { selectedFacultyIndex = idx; startFeedback(); };
+            card.addEventListener('click', ()=>{
+                selectedFacultyIndex = idx;
+                startFeedback();
+            });
         }
         grid.appendChild(card);
     });
 }
-
 // -------------------- Page 3: Feedback --------------------
 function startFeedback(){
     showPage('page3');
