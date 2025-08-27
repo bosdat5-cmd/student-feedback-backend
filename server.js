@@ -12,7 +12,11 @@ const app = express();
 app.use(express.json());
 
 // ✅ CORS setup (safe for Render + GitHub frontend)
-app.use(cors()); // allow all origins by default
+app.use(cors({
+  origin: ["https://bosdat5-cmd.github.io"],  // ✅ your GitHub Pages frontend
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"]
+}));
 
 // ✅ Debug: check if env is loading
 console.log("MONGO_URI from .env:", process.env.MONGO_URI);
@@ -83,3 +87,4 @@ app.get("/feedback", async (req, res) => {
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
