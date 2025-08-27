@@ -3,8 +3,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-
-// Load environment variables if using .env
 require("dotenv").config();
 
 const app = express();
@@ -15,11 +13,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend
+// Serve frontend static files
 app.use(express.static(path.join(__dirname, "public")));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
 
 // MongoDB connection
 mongoose
@@ -27,8 +22,8 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // Mongoose Schema & Model
 const feedbackSchema = new mongoose.Schema({
@@ -36,17 +31,12 @@ const feedbackSchema = new mongoose.Schema({
   facultyName: String,
   rating: Number,
   comments: String,
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  createdAt: { type: Date, default: Date.now },
 });
 
 const Feedback = mongoose.model("Feedback", feedbackSchema);
 
-// Routes
-
-// POST /feedback - Add feedback
+// API Routes
 app.post("/feedback", async (req, res) => {
   try {
     const newFeedback = new Feedback(req.body);
@@ -58,7 +48,6 @@ app.post("/feedback", async (req, res) => {
   }
 });
 
-// GET /feedback - Get all feedbacks
 app.get("/feedback", async (req, res) => {
   try {
     const feedbacks = await Feedback.find().sort({ createdAt: -1 });
@@ -69,14 +58,12 @@ app.get("/feedback", async (req, res) => {
   }
 });
 
-// Catch-all route for frontend routing
+// Single catch-all for frontend routing (keep at the very end)
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Student Feedback Backend is running on port ${PORT}`);
 });
-
-
