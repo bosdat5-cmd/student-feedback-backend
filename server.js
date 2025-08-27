@@ -1,90 +1,77 @@
-require("dotenv").config();
-
+// server.js
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const Feedback = require("./models/Feedback");
+
+// Load environment variables if using .env
+require("dotenv").config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// ✅ Middleware
+// Middleware
+app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// ✅ CORS setup (safe for Render + GitHub frontend)
-app.use(cors({
-  origin: ["https://bosdat5-cmd.github.io"],  // ✅ your GitHub Pages frontend
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"]
-}));
+// Serve frontend
+app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ Debug: check if env is loading
-console.log("MONGO_URI from .env:", process.env.MONGO_URI);
+// MongoDB connection
+mongoose
+  .connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/feedbackDB", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
-// ✅ MongoDB Atlas connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log("✅ MongoDB connected"))
-.catch(err => console.error("❌ MongoDB connection error:", err));
-
-// 🔹 Test route
-app.get("/", (req, res) => {
-  res.send("🚀 Student Feedback Backend is running...");
+// Mongoose Schema & Model
+const feedbackSchema = new mongoose.Schema({
+  studentName: String,
+  facultyName: String,
+  rating: Number,
+  comments: String,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-// 🔹 Submit Feedback
+const Feedback = mongoose.model("Feedback", feedbackSchema);
+
+// Routes
+
+// POST /feedback - Add feedback
 app.post("/feedback", async (req, res) => {
   try {
-    const data = req.body;
-
-    const newFeedback = new Feedback({
-      studentName: data.studentName,
-      regNumber: data.regNumber,
-      email: data.email,
-      mobile: data.mobile,
-      facultyName: data.faculty,
-      batchId: data.batchId,
-      attendance: data.attendance,
-      dressCode: data.dressCode,
-      discipline: data.discipline,
-      participation: data.participation,
-      teamwork: data.teamwork,
-      presentationContent: data.presentationContent,
-      presentationDelivery: data.presentationDelivery,
-      communication: data.communication,
-      analytical: data.analytical,
-      creativity: data.creativity,
-      ethics: data.ethics,
-      emotional: data.emotional,
-      overallEngagement: data.overallEngagement,
-      quizMarks: data.quizMarks,
-      weightedScore: data.weightedScore,
-      grade: data.grade
-    });
-
-    await newFeedback.save();
-    console.log("📩 New feedback saved:", newFeedback);
-    res.status(201).json({ message: "✅ Feedback saved successfully!" });
+    const newFeedback = new Feedback(req.body);
+    const savedFeedback = await newFeedback.save();
+    res.status(201).json({ message: "Feedback saved", data: savedFeedback });
   } catch (error) {
-    console.error("❌ Error saving feedback:", error);
-    res.status(500).json({ message: "❌ Error saving feedback", error });
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 });
 
-// 🔹 Get all feedback
+// GET /feedback - Get all feedbacks
 app.get("/feedback", async (req, res) => {
   try {
     const feedbacks = await Feedback.find().sort({ createdAt: -1 });
     res.json(feedbacks);
   } catch (error) {
-    console.error("❌ Error fetching feedback:", error);
-    res.status(500).json({ message: "❌ Error fetching feedback", error });
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 });
 
-// ✅ Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// Catch-all route for frontend routing
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
