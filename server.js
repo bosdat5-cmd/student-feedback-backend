@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve frontend static files
+// Serve static frontend
 app.use(express.static(path.join(__dirname, "public")));
 
 // MongoDB connection
@@ -40,25 +40,25 @@ const Feedback = mongoose.model("Feedback", feedbackSchema);
 app.post("/feedback", async (req, res) => {
   try {
     const newFeedback = new Feedback(req.body);
-    const savedFeedback = await newFeedback.save();
-    res.status(201).json({ message: "Feedback saved", data: savedFeedback });
-  } catch (error) {
-    console.error(error);
+    const saved = await newFeedback.save();
+    res.status(201).json({ message: "Feedback saved", data: saved });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 });
 
 app.get("/feedback", async (req, res) => {
   try {
-    const feedbacks = await Feedback.find().sort({ createdAt: -1 });
-    res.json(feedbacks);
-  } catch (error) {
-    console.error(error);
+    const allFeedback = await Feedback.find().sort({ createdAt: -1 });
+    res.json(allFeedback);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 });
 
-// Single catch-all for frontend routing (keep at the very end)
+// Catch-all route to serve frontend
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
