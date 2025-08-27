@@ -6,15 +6,12 @@ const path = require("path");
 require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 5000; // default port
+const PORT = process.env.PORT || 5000;
 
-// Middleware
+// -------------------- Middleware --------------------
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve static frontend
-app.use(express.static(path.join(__dirname, "public")));
 
 // -------------------- MongoDB Atlas Connection --------------------
 mongoose
@@ -81,9 +78,9 @@ app.get("/feedback", async (req, res) => {
   }
 });
 
-// -------------------- Catch-all Route --------------------
-// Serve frontend for any other route
-app.get("*", (req, res) => {
+// -------------------- Serve Frontend --------------------
+app.use(express.static(path.join(__dirname, "public"))); // serve static files
+app.get("*", (req, res) => {                           // catch-all route
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
