@@ -417,30 +417,29 @@ function submitFacultyFeedback() {
         grade: document.getElementById('gradeDisplay').innerText
     };
 
-  fetch("https://student-feedback-backend-n8cd.onrender.com/feedback", {
+fetch("https://student-feedback-backend-n8cd.onrender.com/feedback", {
     method: "POST",
-    mode: "cors",
     headers: {
         "Content-Type": "application/json"
     },
     body: JSON.stringify(payload)
 })
-    .then(res => {
-        if (res.ok) {
-            completedFaculties.push(faculties[selectedFacultyIndex]);
-            const percent = Math.round((completedFaculties.length / totalFaculties) * 100);
-            document.querySelector('.progress-bar').style.width = percent+'%';
-            document.getElementById('progress-text').innerText = percent+'%';
+.then(res => {
+    if (res.ok) {
+        completedFaculties.push(faculties[selectedFacultyIndex]);
+        const percent = Math.round((completedFaculties.length / totalFaculties) * 100);
+        document.querySelector('.progress-bar').style.width = percent + '%';
+        document.getElementById('progress-text').innerText = percent + '%';
 
-            if (completedFaculties.length >= totalFaculties) {
-                showPage('page4');
-            } else {
-                showFacultySelection();
-            }
+        if (completedFaculties.length >= totalFaculties) {
+            showPage('page4');
         } else {
-            alert("Could not submit data.");
+            showFacultySelection();
         }
-    })
-    .catch(err => alert("Fetch Error: " + err.message));
-}
-</script>
+    } else {
+        res.json().then(err => {
+            alert("❌ Error: " + (err.message || "Could not submit data"));
+        });
+    }
+})
+.catch(err => alert("Fetch Error: " + err.message));
