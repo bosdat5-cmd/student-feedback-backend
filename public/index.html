@@ -417,8 +417,7 @@ function submitFacultyFeedback() {
         grade: document.getElementById('gradeDisplay').innerText
     };
 
-    // 🔹 Send to Formspree instead of Google Apps Script
-    fetch("https://script.google.com/macros/s/AKfycbxKMd5zZLTILO-ZgSC4c-S0TT8dDcx4bD4OK5SZsqhJ5dJISJtcWkc--2eTMSOu69OlIA/exec", {
+  fetch("https://student-feedback-backend-n8cd.onrender.com", {
     method: "POST",
     mode: "cors",
     headers: {
