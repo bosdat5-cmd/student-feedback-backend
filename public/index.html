@@ -417,7 +417,7 @@ function submitFacultyFeedback() {
         grade: document.getElementById('gradeDisplay').innerText
     };
 
-  fetch("https://student-feedback-backend-n8cd.onrender.com", {
+  fetch("https://student-feedback-backend-n8cd.onrender.com/feedback", {
     method: "POST",
     mode: "cors",
     headers: {
