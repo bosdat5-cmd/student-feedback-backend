@@ -256,34 +256,27 @@
 </div>
 
 <script>
+// -------------------- Data --------------------
 let faculties = ["Sandeep Agarwal","Bhanu Dhir","Shekhar Sharma","Anju Gupta","Preeti Goel","Rohit Agarwal","Sunita Rathore"];
 let completedFaculties = [];
 let selectedFacultyIndex = -1;
 let totalFaculties = faculties.length;
 
-// Mapping dropdown text to numeric score
-const scoreMap = {
-    "POOR": 20,
-    "BELOW AVERAGE": 40,
-    "AVERAGE": 60,
-    "GOOD": 80,
-    "EXCELLENT": 100
-};
+const scoreMap = { "POOR":20, "BELOW AVERAGE":40, "AVERAGE":60, "GOOD":80, "EXCELLENT":100 };
 
-// Helper to get numeric score safely
-function getScore(id) {
+// -------------------- Helpers --------------------
+function getScore(id){
     const val = document.getElementById(id).value;
-    if (!val) return 0; // default
+    if(!val) return 0;
     return scoreMap[val.split(":")[1].trim().toUpperCase()] || 0;
 }
 
-// Show requested page
 function showPage(pageId){
-    document.querySelectorAll('.form-page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.form-page').forEach(p => p.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
 }
 
-// Validate student info
+// -------------------- Page 1: Student Info --------------------
 function validatePage1(){
     const name = document.getElementById('studentName').value.trim();
     const reg = document.getElementById('regNumber').value.trim();
@@ -295,34 +288,32 @@ function validatePage1(){
         return;
     }
 
-    // ✅ Proper regex for registration number (3 letters + 7 digits)
     const regPattern = /^[A-Za-z]{3}[0-9]{7}$/;
-    if (!regPattern.test(reg)) {
-        alert("Registration Number must be 3 letters followed by 7 digits (e.g., ABC1234567).");
-        return;
-    }
+    if(!regPattern.test(reg)){ alert("Invalid Reg Number (ABC1234567)."); return; }
 
-    // ✅ Proper regex for mobile (10 digits only)
     const mobilePattern = /^[0-9]{10}$/;
-    if (!mobilePattern.test(mobile)) {
-        alert("Mobile number must be exactly 10 digits.");
-        return;
-    }
+    if(!mobilePattern.test(mobile)){ alert("Mobile must be 10 digits."); return; }
 
-    // ✅ If everything is okay, go to next page
     showFacultySelection();
 }
 
-// Show faculty selection
+// Attach Next button
+const nextBtn = document.getElementById('nextBtn');
+if(nextBtn){
+    nextBtn.type = "button"; // prevent form submit
+    nextBtn.addEventListener('click', validatePage1);
+}
+
+// -------------------- Page 2: Faculty Selection --------------------
 function showFacultySelection(){
     showPage('page2');
     const grid = document.getElementById('facultyGrid');
     grid.innerHTML = '';
     faculties.forEach((f, idx) => {
         const card = document.createElement('div');
-        card.className = 'faculty-card p-4 border rounded-md text-center ' + 
-            (completedFaculties.includes(f) ? 'bg-green-200 cursor-not-allowed' : 'bg-gray-50 cursor-pointer');
-        card.innerHTML = `<h3 class="font-semibold">${f}</h3>`;
+        card.className = 'faculty-card p-4 border rounded text-center ' + 
+                         (completedFaculties.includes(f)?'bg-green-200 cursor-not-allowed':'bg-gray-50 cursor-pointer');
+        card.innerText = f;
         if(!completedFaculties.includes(f)){
             card.onclick = () => { selectedFacultyIndex = idx; startFeedback(); };
         }
@@ -330,123 +321,101 @@ function showFacultySelection(){
     });
 }
 
-// Start feedback
+// -------------------- Page 3: Feedback --------------------
 function startFeedback(){
     showPage('page3');
     document.getElementById('currentFaculty').innerText = faculties[selectedFacultyIndex];
 
-    // Reset all fields
+    // reset fields
     document.querySelectorAll('#questionsContainer select').forEach(el => el.selectedIndex = 0);
     document.getElementById('quizMarks').value = '';
 
-    // Add event listeners for live calculation
+    // live calculation
     const allSelects = document.querySelectorAll('#questionsContainer select');
     allSelects.forEach(el => el.addEventListener('change', calculateWeighted));
     document.getElementById('quizMarks').addEventListener('input', calculateWeighted);
 }
 
-// Live calculate weighted score and grade
-function calculateWeighted() {
+function calculateWeighted(){
     const allSelects = document.querySelectorAll('#questionsContainer select');
-    let total = 0;
-    let count = 0;
-
+    let total = 0, count = 0;
     allSelects.forEach(el => {
-        if (el.selectedIndex > 0) {
+        if(el.selectedIndex > 0){
             const val = el.value.split(":")[1].trim().toUpperCase();
             total += scoreMap[val];
             count++;
         }
     });
-
     const quizInput = parseFloat(document.getElementById('quizMarks').value) || 0;
-    const avgMarks = count ? total / count : 0;
-    const weightedScore = count ? (avgMarks + quizInput) / 2 : 0;
+    const avg = count ? total/count : 0;
+    const weighted = count ? (avg + quizInput)/2 : 0;
 
     let grade = "-";
-    if (weightedScore >= 85) grade = "A+";
-    else if (weightedScore >= 70) grade = "A";
-    else if (weightedScore >= 55) grade = "B+";
-    else if (weightedScore >= 40) grade = "B";
-    else grade = "C";
+    if(weighted >= 85) grade="A+";
+    else if(weighted >= 70) grade="A";
+    else if(weighted >= 55) grade="B+";
+    else if(weighted >= 40) grade="B";
+    else grade="C";
 
-    document.getElementById('weightedScoreDisplay').innerText = weightedScore ? weightedScore.toFixed(2) : "0";
+    document.getElementById('weightedScoreDisplay').innerText = weighted.toFixed(2);
     document.getElementById('gradeDisplay').innerText = grade;
 }
 
-// Submit feedback
-function submitFacultyFeedback() {
-    const selects = document.querySelectorAll('#questionsContainer select');
-    const quizInput = document.getElementById('quizMarks').value.trim();
-
-    for (let el of selects) {
-        if (el.selectedIndex === 0) {
-            alert("Fill all fields.");
-            return;
+// -------------------- Submit Feedback --------------------
+const submitBtn = document.getElementById('submitFeedbackBtn');
+if(submitBtn){
+    submitBtn.type = "button"; // prevent form submit
+    submitBtn.addEventListener('click', async () => {
+        const selects = document.querySelectorAll('#questionsContainer select');
+        for(let el of selects){ 
+            if(el.selectedIndex === 0){ alert("Fill all fields."); return; } 
         }
-    }
 
-    const quizMarks = parseFloat(quizInput);
-    if (isNaN(quizMarks) || quizMarks < 1) {
-        alert("Quiz marks must be at least 1.");
-        return;
-    }
+        const quizMarks = parseFloat(document.getElementById('quizMarks').value);
+        if(isNaN(quizMarks) || quizMarks < 1){ alert("Quiz marks must be at least 1."); return; }
 
-    const payload = {
-        studentName: document.getElementById('studentName').value,
-        regNumber: document.getElementById('regNumber').value,
-        email: document.getElementById('email').value,
-        mobile: document.getElementById('mobile').value,
-        faculty: faculties[selectedFacultyIndex],
-        batchId: document.getElementById('batchId').value,
-        attendance: getScore("attendance"),
-        dressCode: getScore("dressCode"),
-        discipline: getScore("discipline"),
-        participation: getScore("participation"),
-        teamwork: getScore("teamwork"),
-        presentationContent: getScore("presentationContent"),
-        presentationDelivery: getScore("presentationDelivery"),
-        communication: getScore("communication"),
-        analytical: getScore("analytical"),
-        creativity: getScore("creativity"),
-        ethics: getScore("ethics"),
-        emotional: getScore("emotional"),
-        overallEngagement: getScore("overallEngagement"),
-        quizMarks: quizMarks,
-        weightedScore: parseFloat(document.getElementById('weightedScoreDisplay').innerText),
-        grade: document.getElementById('gradeDisplay').innerText
-    };
+        const payload = {
+            studentName: document.getElementById('studentName').value,
+            regNumber: document.getElementById('regNumber').value,
+            email: document.getElementById('email').value,
+            mobile: document.getElementById('mobile').value,
+            faculty: faculties[selectedFacultyIndex],
+            batchId: document.getElementById('batchId').value,
+            attendance: getScore("attendance"),
+            dressCode: getScore("dressCode"),
+            quizMarks: quizMarks,
+            weightedScore: parseFloat(document.getElementById('weightedScoreDisplay').innerText),
+            grade: document.getElementById('gradeDisplay').innerText
+        };
 
-fetch("https://student-feedback-backend-n8cd.onrender.com/feedback", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-})
-.then(async (res) => {
-    if (res.ok) {
-        // ✅ Feedback saved successfully
-        completedFaculties.push(faculties[selectedFacultyIndex]);
+        try {
+            const res = await fetch("https://student-feedback-backend-n8cd.onrender.com/feedback", {
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body: JSON.stringify(payload)
+            });
 
-        const percent = Math.round((completedFaculties.length / totalFaculties) * 100);
-        document.querySelector('.progress-bar').style.width = percent + '%';
-        document.getElementById('progress-text').innerText = percent + '%';
+            if(res.ok){
+                completedFaculties.push(faculties[selectedFacultyIndex]);
+                const percent = Math.round((completedFaculties.length / totalFaculties)*100);
+                document.querySelector('.progress-bar').style.width = percent + '%';
+                document.getElementById('progress-text').innerText = percent + '%';
 
-        if (completedFaculties.length >= totalFaculties) {
-            showPage('page4'); // Final thank you page
-        } else {
-            showFacultySelection(); // Move to next faculty
+                if(completedFaculties.length >= totalFaculties){ 
+                    showPage('page4'); // thank you page
+                } else {
+                    showFacultySelection(); // next faculty
+                }
+
+            } else {
+                const errData = await res.json().catch(()=>({message:"Unknown server error"}));
+                alert("Server Error: "+(errData.message || "Cannot submit feedback"));
+                console.error("Backend Error:", errData);
+            }
+        } catch(err){
+            alert("Network Error: "+err.message);
+            console.error("Fetch Exception:", err);
         }
-    } else {
-        // ❌ Get backend error details
-        const errorData = await res.json();
-        alert("❌ Server Error: " + (errorData.message || "Could not submit data."));
-        console.error("Backend Error:", errorData);
-    }
-})
-.catch(err => {
-    // ❌ Network or CORS error
-    alert("❌ Fetch Error: " + err.message);
-    console.error("Fetch Exception:", err);
-});
+    });
+}
+</script>
